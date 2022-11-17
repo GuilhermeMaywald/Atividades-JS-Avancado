@@ -1,53 +1,43 @@
-//GET 
-//URL: http://apicep.com.br?cep=24111532&rua=Teste
+let inputCep = document.querySelector('#cep');
 
-//POST
-//URL: http://apicep.com.br?cep=24111532&rua=Teste
-//{ rua: "Endereco X" , cep: '24111532' }
+function buscaCep() {
+    const request = new XMLHttpRequest();
 
-// XML
-// <pessoa>
-//     <nome>Wesdras</nome>
-//     <endereco>Rua teste</endereco>
-// </pessoa>
+    request.onreadystatechange = function () {
+        let divLoading = document.querySelector('#loading');
+        let divMessage = document.querySelector('#message');
+        let labelLogradouro = document.querySelector('#logradouro');
+        let labelBairro = document.querySelector('#bairro');
+        let labelUf = document.querySelector('#uf');
 
-// JSON
-// [
-//     pessoa: {
-//         nome: "Wesdras"
-//         endereco: "Rua teste"
-//     }
-// ]
-
-setTimeout(() => {
-    const request = new XMLHttpRequest()
-
-    console.log("STATE INICIAL")
-    console.log(request.readyState)
-
-    request.onreadystatechange = function(){
-        console.log("MUDANDO O STATE")
-        console.log(request.readyState)
-
-        if(request.readyState == 4){
-            console.log(request.status)
-            let jsonData = request.response
-            let objData = JSON.parse(jsonData)
-            const div = document.querySelector("#pokemons")
-
-            objData.results.forEach(pokemon => {
-                div.innerHTML += `<p>${pokemon.name}</p>`
-            });
+        if (request.readyState == 1) {
+            divLoading.style.display = 'block';
+            labelLogradouro.innerHTML = '';
+            labelBairro.innerHTML = '';
+            labelUf.innerHTML = '';
         }
 
-    }
-    
-    request.open("GET","https://pokeapi.co/api/v2/pokemon")
-    request.send()
-},6000)
+        if (request.readyState == 4) {
+            divLoading.style.display = 'none';
+            if (request.status !== 200) {
+                divMessage.style.display = 'block';
+            } else {
+                divMessage.style.display = 'none';
 
+                let jsonData = request.response;
+                let jsonObj = JSON.parse(jsonData);
 
-// let text = '{"pessoa": "Wesdras"}'
-// let text2 = {"pessoa": "Wesdras"}
+                labelLogradouro.innerHTML = jsonObj.address;
+                labelBairro.innerHTML = jsonObj.district;
+                labelUf.innerHTML = jsonObj.state;
+            }
+        }
+    };
+    request.open(
+        'GET',
+        `https://cdn.apicep.com/file/apicep/${cepDigitado}.json`
+    );
+    request.send();
+}
 
-// console.log(JSON.parse(text).pessoa)
+inputCep.addEventListener('blur', buscaCep);
